@@ -286,6 +286,19 @@ impl OneDrive {
             .await
     }
 
+    /// Get item content
+    pub async fn get_item_content<'a>(&self, item: impl Into<ItemLocation<'a>>) -> Result<String> {
+        let raw_resp = self
+            .client
+            .get(api_url![&self.drive, &item.into(), "content"])
+            // .apply(option)
+            .bearer_auth(&self.token)
+            .send()
+            .await?;
+        let content = handle_error_response(raw_resp).await?.text().await?;
+        Ok(content)
+    }
+
     /// Create a new [`DriveItem`][drive_item] allowing to set supported attributes.
     /// [`DriveItem`][drive_item] resources have facets modeled as properties that provide data
     /// about the [`DriveItem`][drive_item]'s identities and capabilities. You must provide one

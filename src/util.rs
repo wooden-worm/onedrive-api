@@ -107,6 +107,7 @@ pub struct ItemLocation<'a> {
 enum ItemLocationEnum<'a> {
     Path(&'a str),
     Id(&'a str),
+    Raw(&'a str),
     // See example `GET last user to modify file foo.txt` from
     // https://docs.microsoft.com/en-us/graph/overview?view=graph-rest-1.0#popular-api-requests
     ChildOfId {
@@ -144,6 +145,14 @@ impl<'a> ItemLocation<'a> {
             })
         } else {
             None
+        }
+    }
+
+    /// From raw path, useful for special locations like /special/approot
+    #[must_use]
+    pub fn from_raw(path: &'a str) -> Self {
+        Self {
+            inner: ItemLocationEnum::Raw(path),
         }
     }
 
@@ -239,6 +248,7 @@ impl ApiPathComponent for ItemLocation<'_> {
         match &self.inner {
             ItemLocationEnum::Path("/") => buf.push("root"),
             ItemLocationEnum::Path(path) => buf.push(&["root:", path, ":"].join("")),
+            ItemLocationEnum::Raw(path) => buf.push(path),
             ItemLocationEnum::Id(id) => buf.extend(&["items", id]),
             ItemLocationEnum::ChildOfId {
                 parent_id,
